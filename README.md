@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🤖 n8n — Déploiement Docker Sécurisé
 
 > Instance **n8n** auto-hébergée via Docker, exposée publiquement avec **ngrok**, sécurisée par authentification et chiffrement.
@@ -163,3 +164,6 @@ n8n-docker/
 ## Licence
 
 Projet personnel — libre d'utilisation et d'adaptation.
+=======
+## N8N ON DOCKER
+>>>>>>> f0c2847229bda37fd36674c0c97d280d7be0326e
