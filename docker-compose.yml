@@ -3,17 +3,26 @@ services:
     image: n8nio/n8n
     container_name: n8n
     ports:
-      - "5678:5678"
+      - "${N8N_PORT:-5678}:5678"
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=admin123
-      - N8N_HOST=0.0.0.0
-      - N8N_PORT=5678
-      - WEBHOOK_TUNNEL_URL=http://0.0.0.0:5678
-      - N8N_CORS_ALLOW_ORIGIN=*
-      - N8N_CORS_ALLOW_METHODS=GET,POST,OPTIONS
-      - N8N_CORS_ALLOW_HEADERS=Content-Type,Authorization
+      # --- Sécurité ---
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+
+      # --- Identité et URLs publiques ---
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=${N8N_PORT}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+
+      # --- CORS restreint ---
+      - N8N_CORS_ALLOW_ORIGIN=${N8N_CORS_ALLOW_ORIGIN}
+      - N8N_CORS_ALLOW_METHODS=${N8N_CORS_ALLOW_METHODS}
+      - N8N_CORS_ALLOW_HEADERS=${N8N_CORS_ALLOW_HEADERS}
     volumes:
       - ~/.n8n:/home/node/.n8n
     restart: unless-stopped
+    env_file:
+      - .env

@@ -1,0 +1,38 @@
+# ============================================================
+# .gitignore — n8n Docker Project
+# ============================================================
+
+# --- Variables d'environnement (SENSIBLE - ne jamais commiter) ---
+.env
+.env.local
+.env.*.local
+*.env
+
+# --- Données n8n locales ---
+.n8n/
+n8n_data/
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Éditeurs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Backup et archives ---
+*.bak
+*.backup
+*.zip
+*.tar.gz
