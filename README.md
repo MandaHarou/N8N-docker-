@@ -1,118 +1,206 @@
-<<<<<<< HEAD
-# 🤖 n8n — Déploiement Docker Sécurisé
+<div align="center">
 
-> Instance **n8n** auto-hébergée via Docker, exposée publiquement avec **ngrok**, sécurisée par authentification et chiffrement.
+# 🤖 n8n — Automation Hub
 
----
+**Plateforme d'automatisation auto-hébergée, pilotée par l'IA**  
+*Déploiement Docker · Exposition publique via ngrok · Workflows intelligents*
 
-## 📋 Table des matières
+[![n8n](https://img.shields.io/badge/n8n-Automation-orange?style=for-the-badge&logo=n8n)](https://n8n.io)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![Ngrok](https://img.shields.io/badge/Ngrok-Tunnel-1F1E37?style=for-the-badge&logo=ngrok)](https://ngrok.com)
+[![Google Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![Telegram](https://img.shields.io/badge/Telegram-Bot-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+H1eXvqQblnNiNDJk)
 
-- [Prérequis](#prérequis)
-- [Installation rapide](#installation-rapide)
-- [Configuration](#configuration)
-- [Démarrage](#démarrage)
-- [Accès à l'interface](#accès-à-linterface)
-- [Commandes utiles](#commandes-utiles)
-- [Sécurité](#sécurité)
-- [Structure du projet](#structure-du-projet)
+</div>
 
 ---
 
-## Prérequis
+## 📌 Vue d'ensemble
 
-Avant de commencer, assurez-vous d'avoir installé :
+Ce dépôt est mon **hub personnel d'automatisation n8n**, déployé en auto-hébergement avec Docker et exposé publiquement via ngrok. Il regroupe des workflows IA que je construis pour automatiser des tâches réelles : veille d'emploi, scraping intelligent, notifications, et plus encore.
+
+> **🎯 Pour les recruteurs** : Ce projet illustre ma maîtrise de l'automatisation, de l'IA générative (Google Gemini), de l'intégration d'APIs, et du déploiement DevOps avec Docker. Chaque workflow est un cas concret et fonctionnel.
+
+> **🛠️ Pour les développeurs** : Vous trouverez ci-dessous toutes les instructions pour déployer votre propre instance n8n et importer mes workflows.
+
+---
+
+## 📋 Sommaire
+
+- [🏗️ Architecture](#️-architecture)
+- [⚙️ Installation & Déploiement](#️-installation--déploiement)
+- [🔐 Configuration](#-configuration)
+- [🚀 Démarrage](#-démarrage)
+- [🤖 Workflows](#-workflows)
+  - [1. Job Finder — Veille emploi IT à Madagascar](#1-job-finder--veille-emploi-it-à-madagascar)
+- [📡 Commandes utiles](#-commandes-utiles)
+- [🔒 Sécurité](#-sécurité)
+
+---
+
+## 🏗️ Architecture
+
+```
+Internet
+   │
+   ▼
+[ngrok tunnel]  ←──────────────────────────┐
+   │                                       │
+   ▼                                       │
+[n8n Container]  (port 5678)               │
+   ├── Workflows & Triggers                │
+   ├── HTTP Requests (scraping)            │
+   ├── AI Agent (Google Gemini)            │
+   └── Intégrations (Telegram, etc.)  ─────┘
+         │
+         ▼
+  Données persistées sur ~/.n8n
+```
+
+**Stack technique :**
+| Composant | Rôle |
+|---|---|
+| `n8n` | Moteur d'automatisation no-code/low-code |
+| `Docker Compose` | Orchestration du conteneur |
+| `ngrok` | Exposition publique sécurisée (webhooks, UI) |
+| `Google Gemini` | Modèle LLM pour l'analyse et extraction IA |
+| `Telegram Bot` | Canal de notification des résultats |
+
+---
+
+## ⚙️ Installation & Déploiement
+
+### Prérequis
 
 - [Docker](https://docs.docker.com/get-docker/) ≥ 24
 - [Docker Compose](https://docs.docker.com/compose/install/) ≥ 2
-- Un tunnel [ngrok](https://ngrok.com/) actif (ou un autre reverse-proxy)
+- Un compte [ngrok](https://ngrok.com/) avec un tunnel actif
+- *(Optionnel)* Un bot Telegram + une clé API Google Gemini pour les workflows IA
 
----
-
-## Installation rapide
+### Étapes
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/votre-utilisateur/n8n-docker.git
+git clone https://github.com/MandaHarou/n8n-docker.git
 cd n8n-docker
 
-# 2. Copier le fichier de configuration
+# 2. Créer le fichier de configuration
 cp .env.example .env
 
-# 3. Remplir les variables sensibles
+# 3. Remplir les variables (voir section Configuration)
 nano .env
 
-# 4. Lancer le conteneur
+# 4. Lancer n8n en arrière-plan
 docker compose up -d
+
+# 5. Vérifier que le conteneur tourne
+docker compose ps
 ```
 
 ---
 
-## Configuration
+## 🔐 Configuration
 
-Toutes les variables sensibles sont gérées dans le fichier **`.env`** (jamais commité).
-
-Copiez `.env.example` vers `.env` et renseignez chaque valeur :
-
-```bash
-cp .env.example .env
-```
-
-### Variables disponibles
+Toutes les variables sensibles sont dans `.env` **(jamais commité)**. Copiez `.env.example` et renseignez chaque valeur :
 
 | Variable | Description | Exemple |
 |---|---|---|
-| `N8N_BASIC_AUTH_ACTIVE` | Active l'authentification HTTP | `true` |
-| `N8N_BASIC_AUTH_USER` | Nom d'utilisateur de connexion | `admin` |
-| `N8N_BASIC_AUTH_PASSWORD` | Mot de passe de connexion | `MonMotDePasse!` |
-| `N8N_ENCRYPTION_KEY` | Clé de chiffrement des credentials n8n | `<hex 64 chars>` |
-| `N8N_HOST` | Domaine public exposé | `xyz.ngrok-free.dev` |
-| `N8N_PORT` | Port interne de n8n | `5678` |
-| `N8N_PROTOCOL` | Protocole utilisé | `https` |
-| `WEBHOOK_URL` | URL de base pour les webhooks | `https://xyz.ngrok-free.dev/` |
-| `N8N_CORS_ALLOW_ORIGIN` | Origine autorisée par CORS | `https://xyz.ngrok-free.dev` |
+| `N8N_BASIC_AUTH_ACTIVE` | Active l'auth HTTP Basic | `true` |
+| `N8N_BASIC_AUTH_USER` | Nom d'utilisateur | `admin` |
+| `N8N_BASIC_AUTH_PASSWORD` | Mot de passe solide | `MonMotDePasse!` |
+| `N8N_ENCRYPTION_KEY` | Clé de chiffrement des credentials | *(générer ci-dessous)* |
+| `N8N_HOST` | Domaine ngrok public | `xyz.ngrok-free.dev` |
+| `N8N_PORT` | Port interne n8n | `5678` |
+| `N8N_PROTOCOL` | Protocole | `https` |
+| `WEBHOOK_URL` | URL de base des webhooks | `https://xyz.ngrok-free.dev/` |
+| `N8N_CORS_ALLOW_ORIGIN` | Origine CORS autorisée | `https://xyz.ngrok-free.dev` |
 | `N8N_CORS_ALLOW_METHODS` | Méthodes HTTP autorisées | `GET,POST,OPTIONS` |
-| `N8N_CORS_ALLOW_HEADERS` | Headers HTTP autorisés | `Content-Type,Authorization` |
+| `N8N_CORS_ALLOW_HEADERS` | Headers autorisés | `Content-Type,Authorization` |
 
-### Générer une clé de chiffrement sécurisée
-
+**Générer une clé de chiffrement sécurisée :**
 ```bash
 openssl rand -hex 32
 ```
 
 ---
 
-## Démarrage
+## 🚀 Démarrage
 
 ```bash
-# Démarrer en arrière-plan
+# Démarrer
 docker compose up -d
-
-# Vérifier que le conteneur est bien actif
-docker compose ps
 
 # Voir les logs en temps réel
 docker compose logs -f n8n
 ```
 
----
-
-## Accès à l'interface
-
-Une fois démarré, n8n est accessible via votre tunnel ngrok :
-
+Accédez à l'interface via votre tunnel ngrok :
 ```
 https://<N8N_HOST>
 ```
+> 💡 En local : `http://localhost:5678`
 
-Connectez-vous avec les identifiants définis dans `.env` :
-- **Utilisateur** : valeur de `N8N_BASIC_AUTH_USER`
-- **Mot de passe** : valeur de `N8N_BASIC_AUTH_PASSWORD`
-
-> 💡 En local, n8n est également accessible sur `http://localhost:5678`
+Identifiants : ceux définis dans `.env` (`N8N_BASIC_AUTH_USER` / `N8N_BASIC_AUTH_PASSWORD`)
 
 ---
 
-## Commandes utiles
+## 🤖 Workflows
+
+> Les workflows sont disponibles dans le dossier [`Template/`](./Template/). Pour les importer dans n8n : **Settings → Import Workflow → sélectionner le fichier `.json`**.
+
+---
+
+### 1. Job Finder — Veille emploi IT à Madagascar
+
+> **Fichier** : [`Template/jobFinder_Workflow.json`](./Template/jobFinder_Workflow.json)
+
+Un agent IA qui scrape chaque matin les offres d'emploi IT disponibles à Madagascar et envoie un résumé personnalisé sur Telegram.
+
+#### 📸 Aperçu du workflow
+
+![Aperçu du workflow Job Finder](./jobfinder_workflow.png)
+
+> 👉 **[Voir le résultat en direct sur Telegram](https://t.me/+H1eXvqQblnNiNDJk)**
+
+#### 🔄 Comment ça fonctionne
+
+```
+⏰ Schedule Trigger (08h01)
+        │
+        ├──► 🌐 HTTP Request → portaljob-madagascar.com  (scraping HTML)
+        │
+        └──► 🌐 HTTP Request → asako.mg                 (scraping HTML)
+                    │
+                    ▼
+        🧠 AI Agent (Google Gemini)
+           → Analyse le HTML brut
+           → Extrait uniquement les offres IT/Web/Data/Cyber
+           → Formate : Titre · Entreprise · Lieu · Contrat · URL
+                    │
+                    ▼
+        📲 Telegram Bot → envoi du résumé dans le groupe
+```
+
+#### 🧰 Nœuds utilisés
+
+| Nœud | Type | Rôle |
+|---|---|---|
+| `Schedule Trigger` | Trigger | Déclenche le workflow à 08h01 chaque jour |
+| `HTTP Request1` | HTTP | Scrape portaljob-madagascar.com |
+| `HTTP Request2` | HTTP | Scrape asako.mg |
+| `AI Agent` | LangChain Agent | Analyse et filtre les offres avec Gemini |
+| `Google Gemini Chat Model` | LLM | Modèle de langage (sous-nœud de l'agent) |
+| `Send a text message` | Telegram | Envoie le résumé dans le groupe Telegram |
+
+#### 🔑 Credentials nécessaires pour le réutiliser
+
+- **Google Gemini API** → [Obtenir une clé](https://ai.google.dev/)
+- **Telegram Bot Token** → [Créer un bot avec @BotFather](https://t.me/BotFather)
+- Renseigner votre `chatId` Telegram dans le nœud `Send a text message`
+
+---
+
+## 📡 Commandes utiles
 
 ```bash
 # Arrêter le conteneur
@@ -121,7 +209,7 @@ docker compose down
 # Redémarrer après modification du .env
 docker compose down && docker compose up -d
 
-# Mettre à jour l'image n8n vers la dernière version
+# Mettre à jour n8n vers la dernière version
 docker compose pull && docker compose up -d
 
 # Accéder au shell du conteneur
@@ -133,37 +221,39 @@ tar -czf n8n_backup_$(date +%Y%m%d).tar.gz ~/.n8n
 
 ---
 
-## Sécurité
+## 🔒 Sécurité
 
 Ce projet applique les bonnes pratiques suivantes :
 
-- 🔐 **Authentification HTTP Basic** activée sur toutes les routes
+- 🔐 **Authentification HTTP Basic** sur toutes les routes
 - 🔑 **Clé de chiffrement** pour les credentials stockés dans n8n
 - 🌐 **CORS restreint** à l'origine ngrok uniquement
 - 📁 **Variables sensibles** isolées dans `.env` (jamais commité)
 - 🚫 **`.gitignore`** protégeant `.env`, les données locales et les logs
 
-> ⚠️ **Important** : Si votre dépôt est public ou partagé, changez immédiatement votre `N8N_BASIC_AUTH_PASSWORD` et `N8N_ENCRYPTION_KEY` si ceux-ci ont déjà été exposés dans un commit précédent.
+> ⚠️ **Important** : Si votre dépôt est public, changez immédiatement `N8N_BASIC_AUTH_PASSWORD` et `N8N_ENCRYPTION_KEY` si ceux-ci ont déjà été exposés dans un commit précédent.
 
 ---
 
-## Structure du projet
+## 📁 Structure du projet
 
 ```
 n8n-docker/
-├── docker-compose.yml   # Définition du service n8n
-├── .env                 # 🔒 Variables sensibles (NON commité)
-├── .env.example         # Template de configuration (commité)
-├── .gitignore           # Fichiers exclus du dépôt Git
-├── n8n.json             # Export de workflow n8n (exemple)
-└── README.md            # Ce fichier
+├── docker-compose.yml          # Définition du service n8n
+├── .env                        # 🔒 Variables sensibles (NON commité)
+├── .env.example                # Template de configuration (commité)
+├── .gitignore                  # Fichiers exclus du dépôt Git
+├── jobfinder_workflow.png      # Capture d'écran du workflow
+├── README.md                   # Ce fichier
+└── Template/
+    └── jobFinder_Workflow.json # Export du workflow Job Finder
 ```
 
 ---
 
-## Licence
+<div align="center">
 
-Projet personnel — libre d'utilisation et d'adaptation.
-=======
-## N8N ON DOCKER
->>>>>>> f0c2847229bda37fd36674c0c97d280d7be0326e
+**Projet personnel — Libre d'utilisation et d'adaptation**  
+*D'autres workflows seront ajoutés régulièrement* ✨
+
+</div>
