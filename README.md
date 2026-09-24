@@ -49,8 +49,9 @@ Internet
    ▼                                       │
 [n8n Container]  (port 5678)               │
    ├── Workflows & Triggers                │
-   ├── HTTP Requests (scraping)            │
    ├── AI Agent (Google Gemini)            │
+   ├── Sandbox Service (sandbox-api:8080)  │
+   ├── Web Search (searxng:8080)           │
    └── Intégrations (Telegram, etc.)  ─────┘
          │
          ▼
@@ -61,7 +62,9 @@ Internet
 | Composant | Rôle |
 |---|---|
 | `n8n` | Moteur d'automatisation no-code/low-code |
-| `Docker Compose` | Orchestration du conteneur |
+| `Docker Compose` | Orchestration multi-conteneurs |
+| `n8n AI Sandbox` | Environnement isolé d'exécution de code pour l'assistant IA |
+| `SearXNG` | Moteur de recherche web auto-hébergé pour l'IA |
 | `ngrok` | Exposition publique sécurisée (webhooks, UI) |
 | `Google Gemini` | Modèle LLM pour l'analyse et extraction IA |
 | `Telegram Bot` | Canal de notification des résultats |
@@ -90,10 +93,10 @@ cp .env.example .env
 # 3. Remplir les variables (voir section Configuration)
 nano .env
 
-# 4. Lancer n8n en arrière-plan
-docker compose up -d
+# 4. Lancer toute la stack n8n en arrière-plan
+docker compose up -d --remove-orphans
 
-# 5. Vérifier que le conteneur tourne
+# 5. Vérifier que les conteneurs tournent
 docker compose ps
 ```
 
@@ -108,11 +111,18 @@ Toutes les variables sensibles sont dans `.env` **(jamais commité)**. Copiez `.
 | `N8N_BASIC_AUTH_ACTIVE` | Active l'auth HTTP Basic | `true` |
 | `N8N_BASIC_AUTH_USER` | Nom d'utilisateur | `admin` |
 | `N8N_BASIC_AUTH_PASSWORD` | Mot de passe solide | `MonMotDePasse!` |
-| `N8N_ENCRYPTION_KEY` | Clé de chiffrement des credentials | *(générer ci-dessous)* |
+| `N8N_ENCRYPTION_KEY` | Clé de chiffrement des credentials | *(générer avec `openssl rand -hex 32`)* |
+| `N8N_SANDBOX_VERSION` | Version des images sandbox | `1.3.4` |
+| `SANDBOX_API_KEYS` | Clé d'API du service sandbox | *(clé aléatoire hex 32)* |
+| `SANDBOX_API_RUNNER_REGISTRATION_TOKEN` | Token de registre runner sandbox | *(clé aléatoire hex 32)* |
+| `SANDBOX_RUNNER_API_KEYS` | Clé API pour le runner | *(clé aléatoire hex 32)* |
+| `N8N_SANDBOX_SERVICE_URL` | URL interne du service sandbox | `http://sandbox-api:8080` |
+| `N8N_SANDBOX_SERVICE_API_KEY` | Clé d'accès n8n vers sandbox | *(même valeur que `SANDBOX_API_KEYS`)* |
+| `SEARXNG_SECRET` | Clé secrète pour SearXNG | *(clé aléatoire hex 32)* |
 | `N8N_HOST` | Domaine ngrok public | `xyz.ngrok-free.dev` |
 | `N8N_PORT` | Port interne n8n | `5678` |
 | `N8N_PROTOCOL` | Protocole | `https` |
-| `WEBHOOK_URL` | URL de base des webhooks | `https://xyz.ngrok-free.dev/` |
+| `N8N_WEBHOOK_URL` | URL de base des webhooks | `https://xyz.ngrok-free.dev/` |
 | `N8N_CORS_ALLOW_ORIGIN` | Origine CORS autorisée | `https://xyz.ngrok-free.dev` |
 | `N8N_CORS_ALLOW_METHODS` | Méthodes HTTP autorisées | `GET,POST,OPTIONS` |
 | `N8N_CORS_ALLOW_HEADERS` | Headers autorisés | `Content-Type,Authorization` |
