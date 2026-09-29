@@ -36,3 +36,5 @@ logs/
 *.backup
 *.zip
 *.tar.gz
+
+n8n-key.pem
